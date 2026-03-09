@@ -1,3 +1,8 @@
-# Sega Model 2 Music Extractor
-For extracting samples from Model 2 sample ROM.
-Only tested with Daytona USA
+# SEGA MultiPCM Sample Extractor
+For extracting samples from SEGA MultiPCM sample ROMs.  
+Tested with Daytona USA and Virtua Racing.  
+Fork of [m2me](https://github.com/belaw/m2me) by belaw.  
+  
+To use:  
+``m2me [input]``  
+all samples found will be written in the same directory as the executable.  
