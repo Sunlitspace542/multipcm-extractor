@@ -23,7 +23,7 @@ WaveHeader *make_WaveHeader(WORD channels, DWORD sampleRate, WORD bitsPerSample,
     h->subChunk2Size = (DWORD) (dataLength * h->numChannels * h->bitsPerSample / 8);
     // fix half-working loop points by accounting for length of SMPL chunk in header
     DWORD dataPadding = (h->subChunk2Size % 2 == 1) ? 1 : 0;
-    DWORD smplSize = 8 + 60;
+    DWORD smplSize = 8 + 60; // SMPL chunk has an 8 byte header + 60 bytes of data
     h->chunkSize = 4 + (8 + h->subChunk1Size) + (8 + h->subChunk2Size + dataPadding) + smplSize;
 
     return h;

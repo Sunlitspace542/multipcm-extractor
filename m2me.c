@@ -8,7 +8,10 @@
 #include "byte_order.h"
 #include "wave.h"
 
-const int INSTRUMENT_SIZE = 12;
+#define NUMINSTRUMENTS 215
+#define INSTRUMENTSIZE 12
+
+const int INSTRUMENT_SIZE = INSTRUMENTSIZE;
 
 typedef struct {
     uint32_t start;
@@ -102,7 +105,7 @@ void print_instrument(Instrument *i) {
 }
 
 int main(int argc, char *argv[]) {
-    printf("Model 2 Music Extractor\n");
+    printf("SEGA MultiPCM Sample Extractor\n");
     if (!argv[1]) {
         printf("No file provided\n");
         return 1;
@@ -112,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     Instrument *instr1 = make_instrument();
     printf(" id |   start  | loop  |  end  |lfo |vib | ar |d1r | dl |d2r | rc | rr |am\n");
-    for (int i = 0; i < 215; i++) {
+    for (int i = 0; i < NUMINSTRUMENTS; i++) {
         read_instrument(i, mpr, instr1);
         printf("%3i | ", i);
         print_instrument(instr1);
