@@ -1,5 +1,6 @@
 //
 // Created by Jonas on 20.12.2015.
+// Sunlit 08.03.2026 Fixed loop points not being read correctly by some programs
 //
 
 #include "wave.h"
@@ -20,7 +21,10 @@ WaveHeader *make_WaveHeader(WORD channels, DWORD sampleRate, WORD bitsPerSample,
 
     h->subChunk2ID = 0x61746164;
     h->subChunk2Size = (DWORD) (dataLength * h->numChannels * h->bitsPerSample / 8);
-    h->chunkSize = 4 + (8 + h->subChunk1Size) + (8 + h->subChunk2Size);
+    // fix half-working loop points by accounting for length of SMPL chunk in header
+    DWORD dataPadding = (h->subChunk2Size % 2 == 1) ? 1 : 0;
+    DWORD smplSize = 8 + 60;
+    h->chunkSize = 4 + (8 + h->subChunk1Size) + (8 + h->subChunk2Size + dataPadding) + smplSize;
 
     return h;
 }
@@ -49,7 +53,7 @@ WaveSampleLoop *make_WaveSampleLoop(DWORD cuePointID, DWORD type, DWORD start, D
     l->cuePointID = cuePointID;
     l->type = type;
     l->start = start;
-    l->end = end;
+    l->end = end-1; // Wavosaur does this so I guess we will too
     l->fraction = fraction;
     l->playCount = playCount;
 
