@@ -1,6 +1,6 @@
 //
 // Created by Jonas on 20.12.2015.
-// Sunlit 10.03.2026 Skip invalid rows, read instrument table properly
+// Sunlit 10.03.2026 Skip invalid rows, read instrument table properly, make platform-independent
 //
 
 #include <stdio.h>
