@@ -9,13 +9,12 @@
 #include "byte_order.h"
 #include "wave.h"
 
-#define NUMINSTRUMENTS 215
 #define INSTRUMENTSIZE 12
 
 const int INSTRUMENT_SIZE = INSTRUMENTSIZE;
 
-const unsigned char invalid_row[12] = {0x00,0x00,0x00,0x00,0x00,0x00,0x0F,0x00,0xF0,0x00,0x0F,0x00};
-const unsigned char end_row[12] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+const unsigned char invalid_row[INSTRUMENTSIZE] = {0x00,0x00,0x00,0x00,0x00,0x00,0x0F,0x00,0xF0,0x00,0x0F,0x00};
+const unsigned char end_row[INSTRUMENTSIZE] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 typedef struct {
     uint32_t start;
@@ -24,14 +23,14 @@ typedef struct {
 } Instrument;
 
 int check_row(FILE *f, int id) {
-    fseek(f, id * 12, SEEK_SET);
-    unsigned char buffer[12];
-    fread(buffer, 12, 1, f);
-    if (memcmp(buffer, end_row, 12) == 0) {
+    fseek(f, id * INSTRUMENTSIZE, SEEK_SET);
+    unsigned char buffer[INSTRUMENTSIZE];
+    fread(buffer, INSTRUMENTSIZE, 1, f);
+    if (memcmp(buffer, end_row, INSTRUMENTSIZE) == 0) {
         printf("%3d | Instrument table end hit!\n", id);
         return 1; // end
     }
-    if (memcmp(buffer, invalid_row, 12) == 0) {
+    if (memcmp(buffer, invalid_row, INSTRUMENTSIZE) == 0) {
         printf("%3d | Invalid row!\n", id);
         return 2; // invalid
     }
