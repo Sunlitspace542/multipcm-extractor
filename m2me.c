@@ -10,9 +10,7 @@
 #include "byte_order.h"
 #include "wave.h"
 
-#define INSTRUMENTSIZE 12
-
-const int INSTRUMENT_SIZE = INSTRUMENTSIZE;
+#define INSTRUMENTSIZE 12 // Length of an instrument table entry in bytes
 
 const unsigned char invalid_row[INSTRUMENTSIZE] = {0x00,0x00,0x00,0x00,0x00,0x00,0x0F,0x00,0xF0,0x00,0x0F,0x00}; // virtua racing has this but other games may not
 const unsigned char end_row[INSTRUMENTSIZE] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
@@ -45,7 +43,7 @@ Instrument *make_instrument() {
 
 
 void read_instrument(int id, FILE *f, Instrument *i) {
-    fseek(f, id * INSTRUMENT_SIZE, SEEK_SET);
+    fseek(f, id * INSTRUMENTSIZE, SEEK_SET);
     int buffer = 0;
     fread(&i->start, 3, 1, f);
     i->start = (uint32_t) reverseInt24(i->start);
