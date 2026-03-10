@@ -7,8 +7,9 @@
 #define M2ME_WAVE_H
 
 #include <stdlib.h>
-typedef unsigned long       DWORD;
-typedef unsigned short      WORD;
+#include <stdint.h>
+#define DWORD uint32_t
+#define WORD uint16_t
 
 //typedef enum {LOOP_NORMAL,LOOP_ALTERNATING,LOOP_BACKWARD} waveSampleLoopType;
 

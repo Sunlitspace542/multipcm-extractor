@@ -170,9 +170,9 @@ INCLUDE_DIRS = $(SOURCE_DIRS)
 # Set the compiler flags for each of the build types
 #
 
-CFlagsDebuglnx:= -g -Og -D_DEBUG -D__LINUX__
-CFlagsInternallnx:= -g -O3 -D_DEBUG -D__LINUX__
-CFlagsReleaselnx:= -O3 -DNDEBUG -D__LINUX__
+CFlagsDebuglnx:= -g -Og -D_DEBUG -D__LINUX__ -D_FILE_OFFSET_BITS=64
+CFlagsInternallnx:= -g -O3 -D_DEBUG -D__LINUX__ -D_FILE_OFFSET_BITS=64
+CFlagsReleaselnx:= -O3 -DNDEBUG -D__LINUX__ -D_FILE_OFFSET_BITS=64
 
 #
 # Set the assembler flags for each of the build types
