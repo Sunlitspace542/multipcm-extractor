@@ -1,11 +1,14 @@
 //
 // Created by Jonas on 20.12.2015.
+// Sunlit 10.03.2026 remove Windows dependency
 //
 
 #ifndef M2ME_WAVE_H
 #define M2ME_WAVE_H
 
-#include <minwindef.h> // Windows data types
+#include <stdlib.h>
+typedef unsigned long       DWORD;
+typedef unsigned short      WORD;
 
 //typedef enum {LOOP_NORMAL,LOOP_ALTERNATING,LOOP_BACKWARD} waveSampleLoopType;
 

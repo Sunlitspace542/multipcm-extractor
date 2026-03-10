@@ -25,10 +25,12 @@ int check_row(FILE *f, int id) {
     fseek(f, id * INSTRUMENTSIZE, SEEK_SET);
     unsigned char buffer[INSTRUMENTSIZE];
     fread(buffer, INSTRUMENTSIZE, 1, f);
+    // Check for instrument table end
     if (memcmp(buffer, end_row, INSTRUMENTSIZE) == 0) {
         printf("END |  Instrument table end\n");
         return 1; // end
     }
+    // Check for invalid entry
     if (memcmp(buffer, invalid_row, INSTRUMENTSIZE) == 0) {
         printf("%3d |  Invalid instrument\n", id);
         return 2; // invalid
