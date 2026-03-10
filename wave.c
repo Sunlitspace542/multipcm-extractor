@@ -53,7 +53,7 @@ WaveSampleLoop *make_WaveSampleLoop(DWORD cuePointID, DWORD type, DWORD start, D
     l->cuePointID = cuePointID;
     l->type = type;
     l->start = start;
-    l->end = end-1; // Wavosaur does this so I guess we will too
+    l->end = end;
     l->fraction = fraction;
     l->playCount = playCount;
 
