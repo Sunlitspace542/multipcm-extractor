@@ -16,6 +16,12 @@ EXTRA_OBJS:=
 .DEFAULT_GOAL := all
 
 #
+# Default executable name
+#
+
+EXENAME ?= m2me
+
+#
 # List the names of all of the final binaries to build and clean
 #
 
@@ -63,37 +69,37 @@ clean_lnx: clean_Debuglnx clean_Internallnx clean_Releaselnx ;
 
 .PHONY: Debuglnx
 Debuglnx:
-	@$(MAKE) -e --no-print-directory CONFIG=Debug TARGET=lnx -f Makefile bin/m2memaklnxdbg
+	@$(MAKE) -e --no-print-directory CONFIG=Debug TARGET=lnx -f Makefile bin/$(EXENAME)_dbg
 
 .PHONY: clean_Debuglnx
 clean_Debuglnx:
 	@-rm -f $(EXTRA_OBJS)
-	@-rm -rf temp/m2memaklnxdbg
-	@-rm -f bin/m2memaklnxdbg
+	@-rm -rf temp/$(EXENAME)_dbg
+	@-rm -f bin/$(EXENAME)_dbg
 	@if [ -d bin ] && files=$$(ls -qAL -- bin) && [ -z "$$files" ]; then rm -fd bin; fi
 	@if [ -d temp ] && files=$$(ls -qAL -- temp) && [ -z "$$files" ]; then rm -fd temp; fi
 
 .PHONY: Internallnx
 Internallnx:
-	@$(MAKE) -e --no-print-directory CONFIG=Internal TARGET=lnx -f Makefile bin/m2memaklnxint
+	@$(MAKE) -e --no-print-directory CONFIG=Internal TARGET=lnx -f Makefile bin/$(EXENAME)_int
 
 .PHONY: clean_Internallnx
 clean_Internallnx:
 	@-rm -f $(EXTRA_OBJS)
-	@-rm -rf temp/m2memaklnxint
-	@-rm -f bin/m2memaklnxint
+	@-rm -rf temp/$(EXENAME)_int
+	@-rm -f bin/$(EXENAME)_int
 	@if [ -d bin ] && files=$$(ls -qAL -- bin) && [ -z "$$files" ]; then rm -fd bin; fi
 	@if [ -d temp ] && files=$$(ls -qAL -- temp) && [ -z "$$files" ]; then rm -fd temp; fi
 
 .PHONY: Releaselnx
 Releaselnx:
-	@$(MAKE) -e --no-print-directory CONFIG=Release TARGET=lnx -f Makefile bin/m2memaklnxrel
+	@$(MAKE) -e --no-print-directory CONFIG=Release TARGET=lnx -f Makefile bin/$(EXENAME)
 
 .PHONY: clean_Releaselnx
 clean_Releaselnx:
 	@-rm -f $(EXTRA_OBJS)
-	@-rm -rf temp/m2memaklnxrel
-	@-rm -f bin/m2memaklnxrel
+	@-rm -rf temp/$(EXENAME)
+	@-rm -f bin/$(EXENAME)
 	@if [ -d bin ] && files=$$(ls -qAL -- bin) && [ -z "$$files" ]; then rm -fd bin; fi
 	@if [ -d temp ] && files=$$(ls -qAL -- temp) && [ -z "$$files" ]; then rm -fd temp; fi
 
@@ -130,13 +136,6 @@ CONFIG ?= Release
 #
 
 TARGET ?= lnx
-
-#
-# Default executable name
-#
-
-EXENAME ?= m2me
-
 
 #
 # Directory name fragments
@@ -267,15 +266,15 @@ $(TEMP_DIR)/wave.o: wave.c ; $(BUILD_C)
 # Create final binaries
 #
 
-bin/m2memaklnxdbg: $(EXTRA_OBJS) $(OBJS) Makefile | bin
+bin/$(EXENAME)_dbg: $(EXTRA_OBJS) $(OBJS) Makefile | bin
 	@echo Performing link...
 	@$(LINK) -o bin/$(EXENAME)_dbg $(OBJS) $(LFlags$(CONFIG)$(TARGET))
 
-bin/m2memaklnxint: $(EXTRA_OBJS) $(OBJS) Makefile | bin
+bin/$(EXENAME)_int: $(EXTRA_OBJS) $(OBJS) Makefile | bin
 	@echo Performing link...
 	@$(LINK) -o bin/$(EXENAME)_int $(OBJS) $(LFlags$(CONFIG)$(TARGET))
 
-bin/m2memaklnxrel: $(EXTRA_OBJS) $(OBJS) Makefile | bin
+bin/$(EXENAME): $(EXTRA_OBJS) $(OBJS) Makefile | bin
 	@echo Performing link...
 	@$(LINK) -o bin/$(EXENAME) $(OBJS) $(LFlags$(CONFIG)$(TARGET))
 

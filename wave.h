@@ -5,7 +5,7 @@
 #ifndef M2ME_WAVE_H
 #define M2ME_WAVE_H
 
-#include <minwindef.h>
+#include <minwindef.h> // Windows data types
 
 //typedef enum {LOOP_NORMAL,LOOP_ALTERNATING,LOOP_BACKWARD} waveSampleLoopType;
 
