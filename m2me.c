@@ -28,11 +28,11 @@ int check_row(FILE *f, int id) {
     unsigned char buffer[INSTRUMENTSIZE];
     fread(buffer, INSTRUMENTSIZE, 1, f);
     if (memcmp(buffer, end_row, INSTRUMENTSIZE) == 0) {
-        printf("%3d | Instrument table end hit!\n", id);
+        printf("END |  Instrument table end\n");
         return 1; // end
     }
     if (memcmp(buffer, invalid_row, INSTRUMENTSIZE) == 0) {
-        printf("%3d | Invalid row!\n", id);
+        printf("%3d |  Invalid instrument\n", id);
         return 2; // invalid
     }
     return 0; // valid
@@ -142,8 +142,8 @@ int main(int argc, char *argv[]) {
     int sample_number = 0; // Output file's sample number
     for (int i = 0; ; i++) {
         int status = check_row(mpr, i);
-        if (status == 1) break;
-        if (status == 2) continue;
+        if (status == 1) break; // hit end of instrument table
+        if (status == 2) continue; // instrument is invalid
         read_instrument(i, mpr, instr1);
         printf("%3i | ", i);
         print_instrument(instr1);
@@ -152,5 +152,6 @@ int main(int argc, char *argv[]) {
     }
     free(instr1);
     fclose(mpr);
+    printf("Extracted %d samples\n", sample_number);
     return 0;
 }
