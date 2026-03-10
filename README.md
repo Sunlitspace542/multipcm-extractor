@@ -4,5 +4,5 @@ Tested with Daytona USA and Virtua Racing.
 Fork of [m2me](https://github.com/belaw/m2me) by belaw.  
   
 To use:  
-``m2me [input]``  
-all samples found will be written in the same directory as the executable.  
+``m2me [pcm rom]``  
+all samples found will be written in the current working directory.

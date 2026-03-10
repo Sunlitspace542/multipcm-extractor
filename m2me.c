@@ -72,7 +72,7 @@ void write_instrument(int id, FILE *f, Instrument *i) {
     char str[20];
     sprintf(str, "%03i.wav", id);
     FILE *out = fopen(str, "wb");
-
+    
     char *data = malloc(i->end);
     fseeko64(f, i->start, SEEK_SET);
     fread(data, i->end, 1, f);
@@ -83,41 +83,41 @@ void write_instrument(int id, FILE *f, Instrument *i) {
             data[j] -= 128;
         }
     }
-
+    
     WaveHeader *header = make_WaveHeader(1, 44100, 8, i->end);
     WavePadding *padding = make_WavePadding();
     WaveSmplChunk *smpl = make_WaveSmplChunk();
     WaveSampleLoop *loop = make_WaveSampleLoop(0, 0, i->loop, i->end, 0, 0);
-
+    
     fwrite(header, sizeof(WaveHeader), 1, out);
     fwrite(data, i->end, 1, out);
     if (ftell(out) & 1) fwrite(padding, sizeof(char), 1, out);
     fwrite(smpl, sizeof(WaveSmplChunk), 1, out);
     fwrite(loop, sizeof(WaveSampleLoop), 1, out);
-
+    
     free(header);
     free(data);
     free(padding);
     free(smpl);
     free(loop);
-
+    
     fclose(out);
 }
 
 void print_instrument(Instrument *i) {
     printf("%8i | %5i | %5i | %2i | %2i | %2i | %2i | %2i | %2i | %2i | %2i | %2i\n",
-           i->start,
-           i->loop,
-           i->end,
-           i->lfo,
-           i->vib,
-           i->ar,
-           i->d1r,
-           i->dl,
-           i->d2r,
-           i->rate_correction,
-           i->rr,
-           i->am
+        i->start,
+        i->loop,
+        i->end,
+        i->lfo,
+        i->vib,
+        i->ar,
+        i->d1r,
+        i->dl,
+        i->d2r,
+        i->rate_correction,
+        i->rr,
+        i->am
     );
 }
 
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
         printf("Input file does not exist!\n");
         return 1;
     }
-
+    
     Instrument *instr1 = make_instrument();
     printf("File: %s\n", argv[1]);
     printf(" id |   start  | loop  |  end  |lfo |vib | ar |d1r | dl |d2r | rc | rr |am\n");

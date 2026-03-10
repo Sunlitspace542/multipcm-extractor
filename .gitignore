@@ -1,4 +1,16 @@
+# WAVs
 *.wav
+
+# Executables
 *.exe
+
+# Compiled Objects
 *.d
 *.o
+
+# PCM ROMs
+mpr-*
+
+# Only keep VSCode settings
+.vscode/*
+!.vscode/settings.json
