@@ -23,10 +23,10 @@ typedef struct {
 
 // Handle fread errors to make the compiler happy
 void readfile(void *ptr, size_t size, size_t nobj, FILE *stream) {
-        if (fread(ptr, size, nobj, stream) != nobj) {
-            printf("Warning: Failed to read data\n");
-        }
+    if (fread(ptr, size, nobj, stream) != nobj) {
+        printf("Warning: Failed to read data\n");
     }
+}
 
 int check_row(FILE *f, int id) {
     fseek(f, id * INSTRUMENTSIZE, SEEK_SET);
