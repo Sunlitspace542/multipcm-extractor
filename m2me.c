@@ -22,7 +22,7 @@ typedef struct {
 } Instrument;
 
 // Handle fread errors to make the compiler happy
-void fread_s(void *ptr, size_t size, size_t nobj, FILE *stream) {
+void readfile(void *ptr, size_t size, size_t nobj, FILE *stream) {
         if (fread(ptr, size, nobj, stream) != nobj) {
             printf("Warning: Failed to read data\n");
         }
@@ -31,7 +31,7 @@ void fread_s(void *ptr, size_t size, size_t nobj, FILE *stream) {
 int check_row(FILE *f, int id) {
     fseek(f, id * INSTRUMENTSIZE, SEEK_SET);
     unsigned char buffer[INSTRUMENTSIZE];
-    fread_s(buffer, INSTRUMENTSIZE, 1, f);
+    readfile(buffer, INSTRUMENTSIZE, 1, f);
     // Check for instrument table end
     if (memcmp(buffer, end_row, INSTRUMENTSIZE) == 0) {
         printf("END |  Instrument table end\n");
@@ -54,26 +54,26 @@ Instrument *make_instrument() {
 void read_instrument(int id, FILE *f, Instrument *i) {
     fseek(f, id * INSTRUMENTSIZE, SEEK_SET);
     int buffer = 0;
-    fread_s(&i->start, 3, 1, f);
+    readfile(&i->start, 3, 1, f);
     i->start = (uint32_t) reverseInt24(i->start);
-    fread_s(&i->loop, 2, 1, f);
+    readfile(&i->loop, 2, 1, f);
     i->loop = (unsigned short) reverseShort(i->loop);
-    fread_s(&buffer, 2, 1, f);
+    readfile(&buffer, 2, 1, f);
     i->end = (unsigned short) (buffer);
     i->end = (unsigned short) (~reverseShort(i->end) + 1);
-    fread_s(&buffer, 1, 1, f);
+    readfile(&buffer, 1, 1, f);
     i->lfo = (uint8_t) ((buffer >> 3) & 0x07);
     i->vib = (uint8_t) (buffer & 0x07);
-    fread_s(&buffer, 1, 1, f);
+    readfile(&buffer, 1, 1, f);
     i->ar = (uint8_t) ((buffer >> 4) & 0x0F);
     i->d1r = (uint8_t) (buffer & 0x0F);
-    fread_s(&buffer, 1, 1, f);
+    readfile(&buffer, 1, 1, f);
     i->dl = (uint8_t) ((buffer >> 4) & 0x0F);
     i->d2r = (uint8_t) (buffer & 0x0F);
-    fread_s(&buffer, 1, 1, f);
+    readfile(&buffer, 1, 1, f);
     i->rate_correction = (uint8_t) ((buffer >> 4) & 0x0F);
     i->rr = (uint8_t) (buffer & 0x0F);
-    fread_s(&buffer, 1, 1, f);
+    readfile(&buffer, 1, 1, f);
     i->am = (uint8_t) (buffer & 0x07);
 }
 
@@ -84,7 +84,7 @@ void write_instrument(int id, FILE *f, Instrument *i) {
     
     char *data = malloc(i->end);
     fseeko(f, i->start, SEEK_SET);
-    fread_s(data, i->end, 1, f);
+    readfile(data, i->end, 1, f);
     for (int j = 0; j < i->end; j++) {
         if (data[j] >= 128) {
             data[j] += 127;
