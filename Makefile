@@ -98,7 +98,7 @@ Releaselnx:
 .PHONY: clean_Releaselnx
 clean_Releaselnx:
 	@-rm -f $(EXTRA_OBJS)
-	@-rm -rf temp/$(EXENAME)
+	@-rm -rf temp/$(EXENAME)_rel
 	@-rm -f bin/$(EXENAME)
 	@if [ -d bin ] && files=$$(ls -qAL -- bin) && [ -z "$$files" ]; then rm -fd bin; fi
 	@if [ -d temp ] && files=$$(ls -qAL -- temp) && [ -z "$$files" ]; then rm -fd temp; fi
@@ -152,7 +152,7 @@ CONFIG_SUFFIX_Release := rel
 #
 
 BASE_SUFFIX := mak$(TARGET_SUFFIX_$(TARGET))$(CONFIG_SUFFIX_$(CONFIG))
-TEMP_DIR := temp/m2me$(BASE_SUFFIX)
+TEMP_DIR := temp/$(EXENAME)_$(CONFIG_SUFFIX_$(CONFIG))
 
 #
 # SOURCE_DIRS = Work directories for the source code
