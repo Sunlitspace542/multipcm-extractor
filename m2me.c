@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include "byte_order.h"
 #include "wave.h"
 
@@ -13,11 +14,29 @@
 
 const int INSTRUMENT_SIZE = INSTRUMENTSIZE;
 
+const unsigned char invalid_row[12] = {0x00,0x00,0x00,0x00,0x00,0x00,0x0F,0x00,0xF0,0x00,0x0F,0x00};
+const unsigned char end_row[12] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+
 typedef struct {
     uint32_t start;
     unsigned short loop, end;
     uint8_t lfo, vib, ar, d1r, dl, d2r, rate_correction, rr, am;
 } Instrument;
+
+int check_row(FILE *f, int id) {
+    fseek(f, id * 12, SEEK_SET);
+    unsigned char buffer[12];
+    fread(buffer, 12, 1, f);
+    if (memcmp(buffer, end_row, 12) == 0) {
+        printf("%3d | Instrument table end hit!\n", id);
+        return 1; // end
+    }
+    if (memcmp(buffer, invalid_row, 12) == 0) {
+        printf("%3d | Invalid row!\n", id);
+        return 2; // invalid
+    }
+    return 0; // valid
+}
 
 Instrument *make_instrument() {
     Instrument *i = malloc(sizeof(Instrument));
@@ -112,14 +131,24 @@ int main(int argc, char *argv[]) {
     }
     FILE *mpr;
     mpr = fopen(argv[1], "rb");
+    if (mpr == NULL) {
+        printf("Input file does not exist!\n");
+        return 1;
+    }
 
     Instrument *instr1 = make_instrument();
+    printf("File: %s\n", argv[1]);
     printf(" id |   start  | loop  |  end  |lfo |vib | ar |d1r | dl |d2r | rc | rr |am\n");
-    for (int i = 0; i < NUMINSTRUMENTS; i++) {
+    int sample_number = 0; // Output file's sample number
+    for (int i = 0; ; i++) {
+        int status = check_row(mpr, i);
+        if (status == 1) break;
+        if (status == 2) continue;
         read_instrument(i, mpr, instr1);
         printf("%3i | ", i);
         print_instrument(instr1);
-        write_instrument(i, mpr, instr1);
+        write_instrument(sample_number, mpr, instr1);
+        sample_number++;
     }
     free(instr1);
     fclose(mpr);
