@@ -37,7 +37,7 @@ void readfile(void *ptr, size_t size, size_t nobj, FILE *stream) {
 // Try to open a file and handle errors
 FILE *openfile(const char *filename, const char *mode) {
     if (fopen(filename, mode) == NULL){
-        printf("Could not open file %s!\n", filename);
+        printf("Error: openfile() could not open file %s!\n", filename);
         exit(1);
     } return fopen(filename, mode);
 }
@@ -103,9 +103,10 @@ void write_instrument(int id, FILE *f, Instrument *i, char* outdir) {
         sprintf(str, "%03i.wav", id);
     } else {
         sprintf(str, "%s/%03i.wav", outdir, id);
+        //mkdir(outdir, 0777); // TODO some *nix systems need mode parameter, others don't. Why?
         mkdir(outdir);
     }
-    FILE *out = fopen(str, "wb");
+    FILE *out = openfile(str, "wb");
     
     char *data = malloc(i->end);
     fseeko(f, i->start, SEEK_SET);
@@ -227,11 +228,7 @@ int main(int argc, char *argv[]) {
     
     // Everything Else
     FILE *mpr;
-    mpr = fopen(infile, "rb");
-    if (mpr == NULL) {
-        printf("Bad command or filename\nRun m2me -help for help.\n");
-        return 1;
-    }
+    mpr = openfile(infile, "rb");
     
     Instrument *instr1 = make_instrument();
     printf("File: %s\n", infile);
