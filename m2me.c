@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
         printf("Too many arguments specified.\nRun m2me -help for help.\n");
         return 1;
     }
-
+    
     // handle "-i" switch
     if (argc >= 2 && (!strcmp(argv[1],arguments[1]))) {
         if (!argv[2]) {
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
             return 1;
         }
     }
-
+    
     // handle "-t" switch
     if (argc >= 2 && (!strcmp(argv[1],arguments[3]))) {
         testmode = 1;
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
         }
         strcpy(infile,argv[2]);
     }
-
+    
     // handle "-help" switch
     if (!strcmp(argv[1],arguments[0])) {
         printf(
@@ -219,7 +219,6 @@ int main(int argc, char *argv[]) {
     }
     
     // Everything Else
-    
     FILE *mpr;
     mpr = fopen(infile, "rb");
     if (mpr == NULL) {
