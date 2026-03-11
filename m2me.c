@@ -50,9 +50,15 @@ int check_row(FILE *f, int id) {
         printf("END |  Instrument table end\n");
         return 1; // end
     }
-    // Check for invalid entry
+    // Check for invalid entry by known byte pattern
     if (memcmp(buffer, invalid_row, INSTRUMENTSIZE) == 0) {
         printf("%3d |  Invalid instrument\n", id);
+        return 2; // invalid
+    }
+    // If sum of offset bytes >=760 or <=0, invalid
+    int sum = buffer[0] + buffer[1] + buffer[2];
+    if (sum >= 760 || sum <= 0) {
+        printf("%3d |  Invalid instrument (offset sum check)\n", id);
         return 2; // invalid
     }
     return 0; // valid
