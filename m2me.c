@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
     FILE *mpr;
     mpr = fopen(infile, "rb");
     if (mpr == NULL) {
-        printf("Input file does not exist!\n");
+        printf("Input file does not exist or invalid argument(s) specified\n");
         return 1;
     }
     
