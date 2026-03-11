@@ -2,6 +2,7 @@
 // Created by Jonas on 20.12.2015.
 // Sunlit 10.03.2026 Skip invalid rows, read instrument table properly, make platform-independent
 // Sunlit 10.03.2026 Add arguments, only read up to 256 instruments, fail on readfile() object number mismatch
+// Sunlit 10.03.2026 Add alternate method of finding invalid instruments, remove 256 instrument failsafe
 //
 
 #include <stdio.h>
