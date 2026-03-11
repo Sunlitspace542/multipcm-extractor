@@ -3,6 +3,9 @@
 
 # Executables
 *.exe
+*bin/m2me
+*bin/m2me_dbg
+*bin/m2me_int
 
 # Compiled Objects
 *.d
