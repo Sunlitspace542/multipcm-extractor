@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
     printf(" id |   start  | loop  |  end  |lfo |vib | ar |d1r | dl |d2r | rc | rr |am\n");
     int sample_number = 0; // Output file's sample number
     for (int i = 0; ; i++) {
-        if (i > 256){printf("Warning: More than 256 instruments read! Stopping...\n"); break;}
+        //if (i > 256){printf("Warning: More than 256 instruments read! Stopping...\n"); break;}
         int status = check_row(mpr, i);
         if (status == 1) break; // hit end of instrument table
         if (status == 2) continue; // instrument is invalid
