@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include "byte_order.h"
 #include "wave.h"
 
@@ -24,8 +27,17 @@ typedef struct {
 // Handle fread errors to make the compiler happy
 void readfile(void *ptr, size_t size, size_t nobj, FILE *stream) {
     if (fread(ptr, size, nobj, stream) != nobj) {
-        printf("Warning: Failed to read data\n");
+        printf("Error: readfile() failed to fetch all objects\n");
+        exit(1);
     }
+}
+
+// Try to open a file and handle errors
+FILE *openfile(const char *filename, const char *mode) {
+    if (fopen(filename, mode) == NULL){
+        printf("Could not open file %s!\n", filename);
+        exit(1);
+    } return fopen(filename, mode);
 }
 
 int check_row(FILE *f, int id) {
@@ -77,9 +89,14 @@ void read_instrument(int id, FILE *f, Instrument *i) {
     i->am = (uint8_t) (buffer & 0x07);
 }
 
-void write_instrument(int id, FILE *f, Instrument *i) {
-    char str[20];
-    sprintf(str, "%03i.wav", id);
+void write_instrument(int id, FILE *f, Instrument *i, char* outdir) {
+    char str[PATH_MAX];
+    if(!outdir) {
+        sprintf(str, "%03i.wav", id);
+    } else {
+        sprintf(str, "%s/%03i.wav", outdir, id);
+        mkdir(outdir);
+    }
     FILE *out = fopen(str, "wb");
     
     char *data = malloc(i->end);
@@ -130,35 +147,102 @@ void print_instrument(Instrument *i) {
     );
 }
 
+// Possible command line arguments
+const char *arguments[] =  {
+    "-help",    // 0 - help text
+    "-i",       // 1 - input file
+    "-o",       // 2 - output dir
+    "-t"        // 3 - test mode
+};
+
 int main(int argc, char *argv[]) {
+    char infile[PATH_MAX];
+    int testmode = 0;
     printf("SEGA MultiPCM Sample Extractor\n");
-    if (!argv[1]) {
-        printf("No file provided\n");
+    
+    // Parse Arguments
+    if (argc == 1) {
+        printf("No arguments specified.\nRun m2me -help for help.\n");
         return 1;
     }
+    
+    if (argc > 5) {
+        printf("Too many arguments specified.\nRun m2me -help for help.\n");
+        return 1;
+    }
+
+    // handle "-i" switch
+    if (argc >= 2 && (!strcmp(argv[1],arguments[1]))) {
+        if (!argv[2]) {
+            printf("No input file provided\n");
+            return 1;
+        }
+        strcpy(infile,argv[2]);
+    } else { // drag-and-drop
+        strcpy(infile,argv[1]);
+        argv[4] = '\0'; // force argv[4] to be NUL
+    }
+    
+    // handle "-o" switch
+    if (argc >= 4 && (!strcmp(argv[3],arguments[2]))) {
+        if (!argv[4]) {
+            printf("No output directory provided\n");
+            return 1;
+        }
+    }
+
+    // handle "-t" switch
+    if (argc >= 2 && (!strcmp(argv[1],arguments[3]))) {
+        testmode = 1;
+        printf("TEST MODE\n");
+        if (!argv[2]) {
+            printf("No input file provided\n");
+            return 1;
+        }
+        strcpy(infile,argv[2]);
+    }
+
+    // handle "-help" switch
+    if (!strcmp(argv[1],arguments[0])) {
+        printf(
+            "Extracts samples from a SEGA MultiPCM sample ROM.\n"
+            "Usage: m2me [options]\n"
+            "Or just drag and drop!\n"
+            "Options:\n"
+            "-i [infile]    Specify input ROM (Required!)\n"
+            "-o [outdir]    Specify output directory (Optional, cannot be used with -t)\n"
+            "-t [infile]    Test mode (No files written)\n"
+            "-help          This text\n"
+        );
+        return 1;
+    }
+    
+    // Everything Else
+    
     FILE *mpr;
-    mpr = fopen(argv[1], "rb");
+    mpr = fopen(infile, "rb");
     if (mpr == NULL) {
         printf("Input file does not exist!\n");
         return 1;
     }
     
     Instrument *instr1 = make_instrument();
-    printf("File: %s\n", argv[1]);
+    printf("File: %s\n", infile);
     printf(" id |   start  | loop  |  end  |lfo |vib | ar |d1r | dl |d2r | rc | rr |am\n");
     int sample_number = 0; // Output file's sample number
     for (int i = 0; ; i++) {
+        if (i > 256){printf("Warning: More than 256 instruments read! Stopping...\n"); break;}
         int status = check_row(mpr, i);
         if (status == 1) break; // hit end of instrument table
         if (status == 2) continue; // instrument is invalid
         read_instrument(i, mpr, instr1);
         printf("%3i | ", i);
         print_instrument(instr1);
-        write_instrument(sample_number, mpr, instr1);
+        if (!testmode) write_instrument(sample_number, mpr, instr1, argv[4]);
         sample_number++;
     }
     free(instr1);
     fclose(mpr);
-    printf("Extracted %d samples\n", sample_number);
+    if (!testmode) printf("Extracted %d samples\n", sample_number);
     return 0;
 }
