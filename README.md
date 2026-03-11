@@ -4,7 +4,7 @@ Tested with Daytona USA and Virtua Racing.
 Fork of [m2me](https://github.com/belaw/m2me) by belaw.  
   
 To use:
-``
+```
 m2me [options]
 Or just drag and drop!
 Options:
@@ -12,4 +12,4 @@ Options:
 -o [outdir]    Specify output directory (Optional, cannot be used with -t)
 -t [infile]    Test mode (No files written)
 -help          Show help text
-``
+```
