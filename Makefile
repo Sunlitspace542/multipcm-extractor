@@ -227,11 +227,11 @@ endef
 #
 
 OBJS:= $(TEMP_DIR)/byte_order.o \
-	$(TEMP_DIR)/m2me.o \
+	$(TEMP_DIR)/main.o \
 	$(TEMP_DIR)/wave.o
 
 DEPS:= $(TEMP_DIR)/byte_order.d \
-	$(TEMP_DIR)/m2me.d \
+	$(TEMP_DIR)/main.d \
 	$(TEMP_DIR)/wave.d
 
 #
@@ -239,7 +239,7 @@ DEPS:= $(TEMP_DIR)/byte_order.d \
 #
 
 byte_order.c \
-m2me.c \
+main.c \
 wave.c \
 	: ;
 
@@ -258,7 +258,7 @@ $(TEMP_DIR):
 
 $(TEMP_DIR)/byte_order.o: byte_order.c ; $(BUILD_C)
 
-$(TEMP_DIR)/m2me.o: m2me.c ; $(BUILD_C)
+$(TEMP_DIR)/main.o: main.c ; $(BUILD_C)
 
 $(TEMP_DIR)/wave.o: wave.c ; $(BUILD_C)
 
