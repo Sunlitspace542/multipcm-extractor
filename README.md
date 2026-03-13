@@ -10,5 +10,7 @@ Options:
 -i[infile]    Specify input ROM (Required!)
 -o[outdir]    Specify output directory (Optional, no effect when used with -t)
 -t[infile]    Test mode (No files written)
--help         Show help text
+-s[num]       Extract samples starting from this instrument table entry (0 - ...)
+-e[num]       Extract up to this number of samples (Must be nonzero)
+-h, -help     Show help text
 ```

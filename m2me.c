@@ -4,6 +4,7 @@
 // Sunlit 10.03.2026 Add arguments, only read up to 256 instruments, fail on readfile() object number mismatch
 // Sunlit 10.03.2026 Add alternate method of finding invalid instruments, remove 256 instrument failsafe
 // Sunlit 10.13.2026 Rewrite argument parsing, create output directory only if it doesn't already exist
+// Sunlit 10.13.2026 Add arguments to set range of samples to extract
 //
 
 #include <stdio.h>
@@ -170,15 +171,15 @@ void print_instrument(Instrument *i) {
     );
 }
 
-int execute_operations(char* infile, char* outdir, int testmode) {
+int execute_operations(char* infile, char* outdir, int testmode, int start_smpl, int end_smpl) {
     FILE *mpr;
     mpr = openfile(infile, "rb");
     
     Instrument *instr1 = make_instrument();
     printf("File: %s\n", infile);
     printf(" id |   start  | loop  |  end  |lfo |vib | ar |d1r | dl |d2r | rc | rr |am\n");
-    int smpl_count = 0; // Output file's sample number
-    for (int i = 0; ; i++) {
+    int smpl_count = start_smpl; // Output file's sample number
+    for (int i = start_smpl; ; i++) {
         //if (i > 256){printf("Warning: More than 256 instruments read! Stopping...\n"); break;}
         int status = check_row(mpr, i);
         if (status == 1) break; // hit end of instrument table
@@ -186,18 +187,21 @@ int execute_operations(char* infile, char* outdir, int testmode) {
         read_instrument(i, mpr, instr1);
         printf("%3i | ", i);
         print_instrument(instr1);
-        if (!testmode) write_instrument(smpl_count, mpr, instr1, outdir);
+        if (!testmode) write_instrument(i, mpr, instr1, outdir);
+        if ((end_smpl != 0) && (i > end_smpl)) break;
         smpl_count++;
     }
     free(instr1);
     fclose(mpr);
-    if (!testmode) {printf("Extracted %d samples\n", smpl_count);}else{printf("Found %d samples\n", smpl_count);}
+    if (!testmode) {printf("Extracted %d valid samples\n", smpl_count);}else{printf("Found %d valid samples\n", smpl_count);}
     return 0;
 }
 
 int main(int argc, char *argv[]) {
     int testmode = 0;
     int num_errors = 0;
+    int start_smpl = 0;
+    int end_smpl = 0;
     int c;
     char* opt_infile = NULL;
     char* opt_outdir = NULL;
@@ -212,7 +216,7 @@ int main(int argc, char *argv[]) {
         // test if the second argument is a file
         if (access(argv[1], F_OK) == 0){
             // if yes, extract samples from file
-            execute_operations(argv[1], opt_outdir, testmode);
+            execute_operations(argv[1], opt_outdir, testmode, start_smpl, end_smpl);
             return 0;
         }
     }
@@ -220,7 +224,7 @@ int main(int argc, char *argv[]) {
         printf("Too many arguments specified.\nRun m2me -help for help.\n");
         return 1;
     }
-    while ((c = getopt(argc, argv, "ht::i::o::")) != -1) {
+    while ((c = getopt(argc, argv, "ht::i::o::s::e::")) != -1) {
         switch (c) {
             case 't':
             testmode = 1;
@@ -233,6 +237,13 @@ int main(int argc, char *argv[]) {
             opt_outdir = optarg;
             if (!opt_outdir){printf("no output directory specified\n");num_errors++;}
             break;
+            case 's':
+            start_smpl = atoi(optarg);
+            break;
+            case 'e':
+            end_smpl = atoi(optarg);
+            printf("%d\n", end_smpl);
+            break;
             case 'h':
             printf(
                 "Extracts samples from a SEGA MultiPCM sample ROM.\n"
@@ -242,6 +253,8 @@ int main(int argc, char *argv[]) {
                 "-i[infile]    Specify input ROM (Required!)\n"
                 "-o[outdir]    Specify output directory (Optional, no effect when used with -t)\n"
                 "-t[infile]    Test mode (No files written)\n"
+                "-s[num]       Extract samples starting from this instrument table entry (0 - ...)\n"
+                "-e[num]       Extract up to this number of samples (Must be nonzero)\n"
                 "-h, -help     This text\n"
             );
             return 1;
@@ -252,6 +265,6 @@ int main(int argc, char *argv[]) {
         }
     }
     if(num_errors > 0){return 1;}
-    execute_operations(opt_infile, opt_outdir, testmode);
+    execute_operations(opt_infile, opt_outdir, testmode, start_smpl, end_smpl);
     return 0;
 }
