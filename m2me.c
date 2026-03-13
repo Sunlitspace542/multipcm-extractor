@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
                 "Or just drag and drop!\n"
                 "Options:\n"
                 "-i[infile]    Specify input ROM (Required!)\n"
-                "-o[outdir]    Specify output directory (Optional, cannot be used with -t)\n"
+                "-o[outdir]    Specify output directory (Optional, no effect when used with -t)\n"
                 "-t[infile]    Test mode (No files written)\n"
                 "-h, -help     This text\n"
             );
