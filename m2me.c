@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
                 "-i[infile]    Specify input ROM (Required!)\n"
                 "-o[outdir]    Specify output directory (Optional, cannot be used with -t)\n"
                 "-t[infile]    Test mode (No files written)\n"
-                "-h, -help         This text\n"
+                "-h, -help     This text\n"
             );
             return 1;
             break;
