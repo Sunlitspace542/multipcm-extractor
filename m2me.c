@@ -3,7 +3,7 @@
 // Sunlit 10.03.2026 Skip invalid rows, read instrument table properly, make platform-independent
 // Sunlit 10.03.2026 Add arguments, only read up to 256 instruments, fail on readfile() object number mismatch
 // Sunlit 10.03.2026 Add alternate method of finding invalid instruments, remove 256 instrument failsafe
-// Sunlit 10.13.2026 Rewrite argument parsing
+// Sunlit 10.13.2026 Rewrite argument parsing, create output directory only if it doesn't already exist
 //
 
 #include <stdio.h>
