@@ -18,16 +18,17 @@
 #include "byte_order.h"
 #include "wave.h"
 
+// only use mode parameter if not on windows (probably some flavor of unix)
 #ifdef _WIN32
 #define MKDIR(path, mode) mkdir(path)
 #else
 #define MKDIR(path, mode) mkdir(path, mode)
 #endif
 
-#define INSTRUMENTSIZE 12 // Length of an instrument table entry in bytes
+#define INSTSIZE 12 // Length of an instrument table entry in bytes
 
-const unsigned char invalid_row[INSTRUMENTSIZE] = {0x00,0x00,0x00,0x00,0x00,0x00,0x0F,0x00,0xF0,0x00,0x0F,0x00}; // virtua racing has this but other games may not
-const unsigned char end_row[INSTRUMENTSIZE] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+const unsigned char invalid_row[INSTSIZE] = {0x00,0x00,0x00,0x00,0x00,0x00,0x0F,0x00,0xF0,0x00,0x0F,0x00}; // virtua racing has this but other games may not
+const unsigned char end_row[INSTSIZE] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 typedef struct option Option;
 typedef struct {
@@ -52,17 +53,18 @@ FILE *openfile(const char *filename, const char *mode) {
     } return fopen(filename, mode);
 }
 
+// Check instrument table entry to figure out if it is invalid or a terminator
 int check_row(FILE *f, int id) {
-    fseek(f, id * INSTRUMENTSIZE, SEEK_SET);
-    unsigned char buffer[INSTRUMENTSIZE];
-    readfile(buffer, INSTRUMENTSIZE, 1, f);
+    fseek(f, id * INSTSIZE, SEEK_SET);
+    unsigned char buffer[INSTSIZE];
+    readfile(buffer, INSTSIZE, 1, f);
     // Check for instrument table end
-    if (memcmp(buffer, end_row, INSTRUMENTSIZE) == 0) {
+    if (memcmp(buffer, end_row, INSTSIZE) == 0) {
         printf("END |  Instrument table end\n");
         return 1; // end
     }
     // Check for invalid entry by known byte pattern
-    if (memcmp(buffer, invalid_row, INSTRUMENTSIZE) == 0) {
+    if (memcmp(buffer, invalid_row, INSTSIZE) == 0) {
         printf("%3d |  Invalid instrument\n", id);
         return 2; // invalid
     }
@@ -82,7 +84,7 @@ Instrument *make_instrument() {
 
 
 void read_instrument(int id, FILE *f, Instrument *i) {
-    fseek(f, id * INSTRUMENTSIZE, SEEK_SET);
+    fseek(f, id * INSTSIZE, SEEK_SET);
     int buffer = 0;
     readfile(&i->start, 3, 1, f);
     i->start = (uint32_t) reverseInt24(i->start);
@@ -113,7 +115,10 @@ void write_instrument(int id, FILE *f, Instrument *i, char* outdir) {
         sprintf(str, "%03i.wav", id);
     } else {
         sprintf(str, "%s/%03i.wav", outdir, id);
-        MKDIR(outdir, 0755);
+        if (access(outdir, F_OK) == -1){
+            // if directory does not already exist, create it
+            MKDIR(outdir, 0755); // mode parameter only applies if compiled on *nix
+        }
     }
     FILE *out = openfile(str, "wb");
     
@@ -172,7 +177,7 @@ int execute_operations(char* infile, char* outdir, int testmode) {
     Instrument *instr1 = make_instrument();
     printf("File: %s\n", infile);
     printf(" id |   start  | loop  |  end  |lfo |vib | ar |d1r | dl |d2r | rc | rr |am\n");
-    int sample_number = 0; // Output file's sample number
+    int smpl_count = 0; // Output file's sample number
     for (int i = 0; ; i++) {
         //if (i > 256){printf("Warning: More than 256 instruments read! Stopping...\n"); break;}
         int status = check_row(mpr, i);
@@ -181,12 +186,12 @@ int execute_operations(char* infile, char* outdir, int testmode) {
         read_instrument(i, mpr, instr1);
         printf("%3i | ", i);
         print_instrument(instr1);
-        if (!testmode) write_instrument(sample_number, mpr, instr1, outdir);
-        sample_number++;
+        if (!testmode) write_instrument(smpl_count, mpr, instr1, outdir);
+        smpl_count++;
     }
     free(instr1);
     fclose(mpr);
-    if (!testmode) printf("Extracted %d samples\n", sample_number);
+    if (!testmode) {printf("Extracted %d samples\n", smpl_count);}else{printf("Found %d samples\n", smpl_count);}
     return 0;
 }
 
@@ -205,7 +210,7 @@ int main(int argc, char *argv[]) {
     // Handle drag-and-drop
     if (argc == 2) {
         // test if the second argument is a file
-        if(access(argv[1], F_OK) == 0){
+        if (access(argv[1], F_OK) == 0){
             // if yes, extract samples from file
             execute_operations(argv[1], opt_outdir, testmode);
             return 0;
@@ -222,11 +227,11 @@ int main(int argc, char *argv[]) {
             printf("TEST MODE\n");
             case 'i':
             opt_infile = optarg;
-            if (!opt_infile){printf("no input ROM specified\n");++num_errors;}
+            if (!opt_infile){printf("no input ROM specified\n");num_errors++;}
             break;
             case 'o':
             opt_outdir = optarg;
-            if (!opt_outdir){printf("no output directory specified\n");;++num_errors;}
+            if (!opt_outdir){printf("no output directory specified\n");num_errors++;}
             break;
             case 'h':
             printf(
