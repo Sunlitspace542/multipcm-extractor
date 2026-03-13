@@ -3,23 +3,33 @@
 // Sunlit 10.03.2026 Skip invalid rows, read instrument table properly, make platform-independent
 // Sunlit 10.03.2026 Add arguments, only read up to 256 instruments, fail on readfile() object number mismatch
 // Sunlit 10.03.2026 Add alternate method of finding invalid instruments, remove 256 instrument failsafe
+// Sunlit 10.13.2026 Rewrite argument parsing
 //
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <getopt.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include "byte_order.h"
 #include "wave.h"
 
+#ifdef _WIN32
+#define MKDIR(path, mode) mkdir(path)
+#else
+#define MKDIR(path, mode) mkdir(path, mode)
+#endif
+
 #define INSTRUMENTSIZE 12 // Length of an instrument table entry in bytes
 
 const unsigned char invalid_row[INSTRUMENTSIZE] = {0x00,0x00,0x00,0x00,0x00,0x00,0x0F,0x00,0xF0,0x00,0x0F,0x00}; // virtua racing has this but other games may not
 const unsigned char end_row[INSTRUMENTSIZE] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
+typedef struct option Option;
 typedef struct {
     uint32_t start;
     unsigned short loop, end;
@@ -103,8 +113,7 @@ void write_instrument(int id, FILE *f, Instrument *i, char* outdir) {
         sprintf(str, "%03i.wav", id);
     } else {
         sprintf(str, "%s/%03i.wav", outdir, id);
-        //mkdir(outdir, 0777); // TODO some *nix systems need mode parameter, others don't. Why?
-        mkdir(outdir);
+        MKDIR(outdir, 0755);
     }
     FILE *out = openfile(str, "wb");
     
@@ -156,77 +165,7 @@ void print_instrument(Instrument *i) {
     );
 }
 
-// Possible command line arguments
-const char *arguments[] =  {
-    "-help",    // 0 - help text
-    "-i",       // 1 - input file
-    "-o",       // 2 - output dir
-    "-t"        // 3 - test mode
-};
-
-int main(int argc, char *argv[]) {
-    char infile[PATH_MAX];
-    int testmode = 0;
-    printf("SEGA MultiPCM Sample Extractor\n");
-    
-    // Parse Arguments
-    if (argc == 1) {
-        printf("No arguments specified.\nRun m2me -help for help.\n");
-        return 1;
-    }
-    
-    if (argc > 5) {
-        printf("Too many arguments specified.\nRun m2me -help for help.\n");
-        return 1;
-    }
-    
-    // handle "-i" switch
-    if (argc >= 2 && (!strcmp(argv[1],arguments[1]))) {
-        if (!argv[2]) {
-            printf("No input file provided\n");
-            return 1;
-        }
-        strcpy(infile,argv[2]);
-    } else { // drag-and-drop
-        strcpy(infile,argv[1]);
-        argv[4] = '\0'; // force argv[4] to be NUL
-    }
-    
-    // handle "-o" switch
-    if (argc >= 4 && (!strcmp(argv[3],arguments[2]))) {
-        if (!argv[4]) {
-            printf("No output directory provided\n");
-            return 1;
-        }
-    }
-    
-    // handle "-t" switch
-    if (argc >= 2 && (!strcmp(argv[1],arguments[3]))) {
-        testmode = 1;
-        printf("TEST MODE\n");
-        if (!argv[2]) {
-            printf("No input file provided\n");
-            return 1;
-        }
-        strcpy(infile,argv[2]);
-    }
-    
-    // handle "-help" switch
-    if (!strcmp(argv[1],arguments[0])) {
-        printf(
-            "Extracts samples from a SEGA MultiPCM sample ROM.\n"
-            "Usage: m2me [options]\n"
-            "Or just drag and drop!\n"
-            "Options:\n"
-            "-i [infile]    Specify input ROM (Required!)\n"
-            "-o [outdir]    Specify output directory (Optional, cannot be used with -t)\n"
-            "-t [infile]    Test mode (No files written)\n"
-            "-help          This text\n"
-        );
-        return 1;
-    }
-    
-    // Everything Else
+int execute_operations(char* infile, char* outdir, int testmode) {
     FILE *mpr;
     mpr = openfile(infile, "rb");
     
@@ -242,11 +181,72 @@ int main(int argc, char *argv[]) {
         read_instrument(i, mpr, instr1);
         printf("%3i | ", i);
         print_instrument(instr1);
-        if (!testmode) write_instrument(sample_number, mpr, instr1, argv[4]);
+        if (!testmode) write_instrument(sample_number, mpr, instr1, outdir);
         sample_number++;
     }
     free(instr1);
     fclose(mpr);
     if (!testmode) printf("Extracted %d samples\n", sample_number);
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
+    int testmode = 0;
+    int num_errors = 0;
+    int c;
+    char* opt_infile = NULL;
+    char* opt_outdir = NULL;
+    printf("SEGA MultiPCM Sample Extractor\n");
+    // Parse Arguments
+    if (argc == 1) {
+        printf("No arguments specified.\nRun m2me -help for help.\n");
+        return 1;
+    }
+    // Handle drag-and-drop
+    if (argc == 2) {
+        // test if the second argument is a file
+        if(access(argv[1], F_OK) == 0){
+            // if yes, extract samples from file
+            execute_operations(argv[1], opt_outdir, testmode);
+            return 0;
+        }
+    }
+    if (argc > 5) {
+        printf("Too many arguments specified.\nRun m2me -help for help.\n");
+        return 1;
+    }
+    while ((c = getopt(argc, argv, "ht::i::o::")) != -1) {
+        switch (c) {
+            case 't':
+            testmode = 1;
+            printf("TEST MODE\n");
+            case 'i':
+            opt_infile = optarg;
+            if (!opt_infile){printf("no input ROM specified\n");++num_errors;}
+            break;
+            case 'o':
+            opt_outdir = optarg;
+            if (!opt_outdir){printf("no output directory specified\n");;++num_errors;}
+            break;
+            case 'h':
+            printf(
+                "Extracts samples from a SEGA MultiPCM sample ROM.\n"
+                "Usage: m2me [options]\n"
+                "Or just drag and drop!\n"
+                "Options:\n"
+                "-i[infile]    Specify input ROM (Required!)\n"
+                "-o[outdir]    Specify output directory (Optional, cannot be used with -t)\n"
+                "-t[infile]    Test mode (No files written)\n"
+                "-h, -help         This text\n"
+            );
+            return 1;
+            break;
+            default:
+            printf("Run m2me -help for help.\n");
+            return 1;
+        }
+    }
+    if(num_errors > 0){return 1;}
+    execute_operations(opt_infile, opt_outdir, testmode);
     return 0;
 }
